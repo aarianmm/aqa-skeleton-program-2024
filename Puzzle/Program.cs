@@ -22,7 +22,7 @@ namespace Puzzle
             while (Again == "y")
             {
                 Console.Write("Press Enter to start a standard puzzle or enter name of file to load: ");
-                string Filename = Console.ReadLine();
+                string Filename = "/Users/aarian/Library/CloudStorage/OneDrive-MerchantTaylors'School/Work/On Computer Work/Y12 + Y13/Computer Science/Git PreRelease/aqa-skeleton-program-2024/Extras/" + Console.ReadLine();
                 Puzzle MyPuzzle;
                 if (Filename.Length > 0)
                 {
@@ -144,6 +144,9 @@ namespace Puzzle
                 {
                     DisplayPuzzle();
                     Console.WriteLine("Current score: " + Score);
+                    Console.WriteLine("Symbols left: " + SymbolsLeft);
+                    Console.WriteLine("Input 'r' to remove a symbol. Press enter to add a symbol.");
+                    bool remove = Console.ReadLine() == "r";
                     bool Valid = false;
                     int Row = -1;
                     while (!Valid)
@@ -172,16 +175,31 @@ namespace Puzzle
                         {
                         }
                     }
-                    string Symbol = GetSymbolFromUser();
-                    SymbolsLeft -= 1;
-                    Cell CurrentCell = GetCell(Row, Column);
-                    if (CurrentCell.CheckSymbolAllowed(Symbol))
+                    if (remove)
                     {
-                        CurrentCell.ChangeSymbolInCell(Symbol);
-                        int AmountToAddToScore = CheckForMatchWithPattern(Row, Column);
-                        if (AmountToAddToScore > 0)
+                        if(GetCell(Row, Column).GetSymbol() == "@" || GetCell(Row, Column).InPattern == true)
                         {
-                            Score += AmountToAddToScore;
+                            Console.WriteLine("This cell cannot be removed...");
+                        }
+                        else
+                        {
+                            GetCell(Row, Column).ChangeSymbolInCell("");
+                            SymbolsLeft++;
+                        }
+                    }
+                    else
+                    {
+                        string Symbol = GetSymbolFromUser();
+                        SymbolsLeft -= 1;
+                        Cell CurrentCell = GetCell(Row, Column);
+                        if (CurrentCell.CheckSymbolAllowed(Symbol))
+                        {
+                            CurrentCell.ChangeSymbolInCell(Symbol);
+                            int AmountToAddToScore = CheckForMatchWithPattern(Row, Column);
+                            if (AmountToAddToScore > 0)
+                            {
+                                Score += AmountToAddToScore;
+                            }
                         }
                     }
                     if (SymbolsLeft == 0)
@@ -232,6 +250,15 @@ namespace Puzzle
                                     GetCell(StartRow - 2, StartColumn).AddToNotAllowedSymbols(CurrentSymbol);
                                     GetCell(StartRow - 1, StartColumn).AddToNotAllowedSymbols(CurrentSymbol);
                                     GetCell(StartRow - 1, StartColumn + 1).AddToNotAllowedSymbols(CurrentSymbol);
+                                    GetCell(StartRow, StartColumn).InPattern = true;
+                                    GetCell(StartRow, StartColumn + 1).InPattern = true;
+                                    GetCell(StartRow, StartColumn + 2).InPattern = true;
+                                    GetCell(StartRow - 1, StartColumn + 2).InPattern = true;
+                                    GetCell(StartRow - 2, StartColumn + 2).InPattern = true;
+                                    GetCell(StartRow - 2, StartColumn + 1).InPattern = true;
+                                    GetCell(StartRow - 2, StartColumn).InPattern = true;
+                                    GetCell(StartRow - 1, StartColumn).InPattern = true;
+                                    GetCell(StartRow - 1, StartColumn + 1).InPattern = true;
                                     return 10;
                                 }
                             }
@@ -331,11 +358,13 @@ namespace Puzzle
         {
             protected string Symbol;
             private List<string> SymbolsNotAllowed;
+            public bool InPattern;
 
             public Cell()
             {
                 Symbol = "";
                 SymbolsNotAllowed = new List<string>();
+                InPattern = false;
             }
 
             public virtual string GetSymbol()
