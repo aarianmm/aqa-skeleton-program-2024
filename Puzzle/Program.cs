@@ -88,7 +88,59 @@ namespace Puzzle
                 AllowedPatterns.Add(TPattern);
                 AllowedSymbols.Add("T");
             }
+            private bool GetSpaceLeftOnGrid()
+            {
+                int leastSymbolsNeeded = int.MaxValue;
+                for(int i=0; i<GridSize; i++)
+                {
+                    for (int j = 0; j < GridSize; j++)
+                    {
+                        int symbolsNeeded = SymbolsNeededForPartialMatchWithPattern(i, j);
+                        if (symbolsNeeded < leastSymbolsNeeded)
+                        {
+                            leastSymbolsNeeded = symbolsNeeded;
+                        }
+                    }
+                }
+                if(leastSymbolsNeeded <= SymbolsLeft)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            public virtual int SymbolsNeededForPartialMatchWithPattern(int StartRow, int StartColumn)
+            {
+                int leastSymbolsNeeded = GridSize * GridSize;
 
+                try
+                {
+                    string PatternString = "";
+                    PatternString += GetCell(StartRow, StartColumn).GetSymbol();
+                    PatternString += GetCell(StartRow, StartColumn + 1).GetSymbol();
+                    PatternString += GetCell(StartRow, StartColumn + 2).GetSymbol();
+                    PatternString += GetCell(StartRow - 1, StartColumn + 2).GetSymbol();
+                    PatternString += GetCell(StartRow - 2, StartColumn + 2).GetSymbol();
+                    PatternString += GetCell(StartRow - 2, StartColumn + 1).GetSymbol();
+                    PatternString += GetCell(StartRow - 2, StartColumn).GetSymbol();
+                    PatternString += GetCell(StartRow - 1, StartColumn).GetSymbol();
+                    PatternString += GetCell(StartRow - 1, StartColumn + 1).GetSymbol();
+                    foreach (var P in AllowedPatterns)
+                    {
+                        int symbolsNeeded = P.SymbolsNeededForPattern(PatternString);
+                        if (symbolsNeeded < leastSymbolsNeeded && symbolsNeeded != 0)
+                        {
+                            leastSymbolsNeeded = symbolsNeeded;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                return leastSymbolsNeeded;
+            }
             private void LoadPuzzle(string Filename)
             {
                 try
@@ -187,6 +239,12 @@ namespace Puzzle
                     if (SymbolsLeft == 0)
                     {
                         Finished = true;
+                    }
+                    if (!GetSpaceLeftOnGrid())
+                    {
+                        Finished = true;
+                        Console.WriteLine("No symbols left to place another pattern");
+                        Score -= SymbolsLeft;
                     }
                 }
                 Console.WriteLine();
@@ -319,6 +377,21 @@ namespace Puzzle
                     }
                 }
                 return true;
+            }
+            public int SymbolsNeededForPattern(string PatternString) //INCL
+            {
+                int symbolsNeeded = 0;
+                for (var Count = 0; Count < PatternSequence.Length; Count++)
+                {
+                    if (PatternSequence[Count].ToString() == Symbol)
+                    {
+                        if (PatternString[Count].ToString() != Symbol)
+                        {
+                            symbolsNeeded++;
+                        }
+                    }
+                }
+                return symbolsNeeded;
             }
 
             public virtual string GetPatternSequence()
