@@ -88,7 +88,37 @@ namespace Puzzle
                 AllowedPatterns.Add(TPattern);
                 AllowedSymbols.Add("T");
             }
-
+            private void SavePuzzle(string Filename)
+            {
+                try
+                {
+                    using (StreamWriter MyStream = new StreamWriter(Filename))
+                    {
+                        MyStream.WriteLine(AllowedSymbols.Count);
+                        foreach(string s in AllowedSymbols)
+                        {
+                            MyStream.WriteLine(s);
+                        }
+                        MyStream.WriteLine(AllowedPatterns.Count);
+                        foreach(Pattern p in AllowedPatterns)
+                        {
+                            string line = p.GetSymbol() + "," + p.GetPatternSequence();
+                            MyStream.WriteLine(line);
+                        }
+                        MyStream.WriteLine(GridSize);
+                        foreach(Cell c in Grid)
+                        {
+                            MyStream.WriteLine(c.GetStringRepresentation());
+                        }
+                        MyStream.WriteLine(Score);
+                        MyStream.WriteLine(SymbolsLeft);
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Puzzle not saved");
+                }
+            }
             private void LoadPuzzle(string Filename)
             {
                 try
@@ -187,6 +217,13 @@ namespace Puzzle
                     if (SymbolsLeft == 0)
                     {
                         Finished = true;
+                    }
+                    Console.WriteLine("Would you like to save the puzzle? Enter 'Y' to save.");
+                    if(Console.ReadLine() == "Y")
+                    {
+                        Console.WriteLine("Please enter the filename you would like to save the puzzle under.");
+                        string fileName = Console.ReadLine();
+                        SavePuzzle(fileName);
                     }
                 }
                 Console.WriteLine();
@@ -325,6 +362,10 @@ namespace Puzzle
             {
                 return PatternSequence;
             }
+            public string GetSymbol()
+            {
+                return Symbol;
+            }
         }
 
         class Cell
@@ -348,6 +389,16 @@ namespace Puzzle
                 {
                     return Symbol;
                 }
+            }
+
+            public string GetStringRepresentation()
+            {
+                string s = Symbol;
+                foreach(string notAllowed in SymbolsNotAllowed)
+                {
+                    s += "," + notAllowed;
+                }
+                return s;
             }
 
             public bool IsEmpty()
